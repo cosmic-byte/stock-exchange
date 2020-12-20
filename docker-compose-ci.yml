@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: '${PWD}/docker/ci.Dockerfile'
+    env_file:
+      - ./stock_exchange.env
+    environment:
+      - CONSOLE_LOGS=1
+      - DJANGO_SETTINGS_MODULE=stock_exchange.ci_settings
+    command: sh run_test.sh
+    image: stock_api:latest
+    depends_on:
+      - elk-search
+
+  elk-search:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    container_name: ci-elk-search
+    environment:
+      - node.name=ci-elk-search
+      - cluster.name=esk-cluster
+      - "discovery.type=single-node"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ci-elk-data:/usr/share/elasticsearch/data
+
+volumes:
+  ci-elk-data:
+    driver: local

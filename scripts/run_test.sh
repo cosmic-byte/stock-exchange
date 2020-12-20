@@ -8,4 +8,4 @@ python3 ./manage.py migrate
 echo "Rebuilding elastic indexes..."
 echo y | python3 ./manage.py search_index --rebuild
 
-pytest ./portal/tests/
+pytest ./stock_exchange/tests/

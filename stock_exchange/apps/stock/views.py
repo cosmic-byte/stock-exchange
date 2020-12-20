@@ -79,6 +79,7 @@ class SearchStockView(BaseDocumentViewSet):
     serializer_class = StockDocumentSerializer
     pagination_class = PageNumberPagination
     filter_backends = [CompoundSearchFilterBackend]
+    permission_classes = [AllowAny]
     search_fields = (
         'company_name',
         'company_symbol',
