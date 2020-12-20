@@ -1,5 +1,5 @@
-from django.db import transaction, models
-from django.db.models import Func, Max
+from django.db import transaction
+from django.db.models import Max
 from django_elasticsearch_dsl_drf.filter_backends import CompoundSearchFilterBackend
 from django_elasticsearch_dsl_drf.pagination import PageNumberPagination
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
@@ -107,24 +107,22 @@ class GetTimeSeriesCompanyStockData(GenericAPIView):
 
         company = get_object_or_none(Company, company_symbol=company_symbol)
         if all([company, time_interval]) and time_interval.lower() in time_series:
-            # company_stock = Stock.objects.filter(deleted=False, company=company)
-            # if time_interval.lower() == 'daily':
-            #     company_stock = company_stock.datetimes('data_time', 'day')
-            # elif time_interval.lower() == 'weekly':
-            #     company_stock = company_stock.datetimes('data_time', 'week')
-            # elif time_interval.lower() == 'monthly':
-            #     # company_stock = (company_stock
-            #     #          .annotate(month_added=Month('data_time'))
-            #     #          .values('data_time__date', 'id')
-            #     #          .order_by('month_added'))
-            #     company_stock = company_stock.datetimes('data_time', 'month')
-            # company_stock = company_stock.annotate(open=Max("open_amount_in_ngn")).values('id', 'data_time', 'open')
-
-            company_stock = Stock.objects.raw('SELECT CONCAT(EXTRACT(YEAR FROM data_time), EXTRACT(MONTH FROM data_time)) as data_time, '
-                                              'id, open_amount_in_ngn '
-                                              'FROM stock_stock GROUP BY data_time, id')
+            company_stock = Stock.objects.filter(deleted=False, company=company)
+            if time_interval.lower() == 'daily':
+                pass
+            elif time_interval.lower() == 'weekly':
+                pass
+            elif time_interval.lower() == 'monthly':
+                pass
+                # company_stock = (company_stock
+                #          .annotate(month_added=Month('data_time'))
+                #          .values('data_time__date', 'id')
+                #          .order_by('month_added'))
+                # company_stock = company_stock.datetimes('data_time', 'month')
+            # company_stock = Stock.objects.raw(
+            # 'SELECT CONCAT(EXTRACT(YEAR FROM data_time), EXTRACT(MONTH FROM data_time)) as data_time, '
+            # 'id, open_amount_in_ngn FROM stock_stock GROUP BY data_time, id')
             stocks = ListStockSerializer(company_stock, many=True)
-
             return Response(stocks.data, status=status.HTTP_200_OK)
             # return Response(self.get_response(company, time_interval, company_stock), status=status.HTTP_200_OK)
         return Response('Invalid stock filter', status=status.HTTP_400_BAD_REQUEST)
@@ -146,9 +144,3 @@ class GetTimeSeriesCompanyStockData(GenericAPIView):
             temp_data['kk'] = _data
         data['time_series'] = temp_data
         return data
-
-
-class Month(Func):
-    function = 'EXTRACT'
-    template = '%(function)s(MONTH from %(expressions)s)'
-    output_field = models.IntegerField()
